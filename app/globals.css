@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0803;
+  --color-gold: #e8b871;
+  --color-gold-soft: #f4cd8e;
+  --color-gold-muted: #bd9c6b;
+  --color-mist: #aca89f;
+
+  --font-display: var(--font-newsreader), Georgia, serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --font-sans: var(--font-source-sans), system-ui, sans-serif;
+}
+
+/*
+ * The reference is a 1672 x 941 composition. From the desktop breakpoint up,
+ * the root font size tracks the viewport so 1rem = 16 reference pixels, and
+ * every rem value in the layout keeps the reference's exact proportions.
+ */
+@media (min-width: 1024px) {
+  html {
+    font-size: clamp(11px, min(100vw / 104.5, 100vh / 58.8125), 22px);
+  }
+}
+
+/*
+ * Set on the root as well as body: while scrolling, the browser fills any area it has not painted
+ * yet with the root colour, and without this that is white.
+ */
+html {
+  background-color: #0a0803;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: #fff;
+}
+
+@layer components {
+  .bg-champagne {
+    background-image: linear-gradient(100deg, #e4b470 0%, #f4cd8e 48%, #dda864 100%);
+  }
+
+  /* Sizing frame for the photograph; .hero-media resolves against it. */
+  .hero-media-frame {
+    container-type: size;
+  }
+
+  /*
+   * Mobile and tablet: the photo sits at the bottom of the hero, framed on the
+   * plate, cup and dessert, and fades up into the dark panel behind the copy.
+   */
+  .hero-media {
+    --w: max(782px, 180cqw);
+    position: absolute;
+    width: var(--w);
+    height: calc(var(--w) / 1.7768);
+    left: calc(50cqw - var(--w) * 0.72);
+    bottom: 0;
+  }
+
+  /*
+   * Hero slideshow. A slide's zoom lasts its 3s hold plus the 1.2s fade of the slide replacing it, so it
+   * is still moving when it disappears. On phones, --slide-focus slides the photo sideways to keep its
+   * subject inside the part of the frame that fits on screen (0.72 is where the frame is centred).
+   */
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateX(calc((0.72 - var(--slide-focus)) * 100%));
+  }
+
+  .hero-slide[data-slide-state="previous"] {
+    opacity: 1;
+    z-index: 0;
+  }
+
+  .hero-slide[data-slide-state="active"] {
+    opacity: 1;
+    z-index: 1;
+    transition: opacity 1.2s ease-in-out;
+  }
+
+  .hero-slide-zoom {
+    position: absolute;
+    inset: 0;
+    --zoom-start: 1;
+    transform-origin: calc(var(--slide-focus) * 100%) 60%;
+  }
+
+  .hero-slide:not([data-slide-state="idle"]) .hero-slide-zoom {
+    animation: hero-slide-zoom 4.2s linear forwards;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide:not([data-slide-state="idle"]) .hero-slide-zoom {
+      animation: none;
+    }
+  }
+
+  .hero-media-fade {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-ink) 0%,
+      rgb(10 8 3 / 0.82) 22%,
+      rgb(10 8 3 / 0.2) 48%,
+      transparent 60%
+    );
+  }
+
+  /* Desktop: the same frame behaves like background-size: cover. */
+  @media (min-width: 1024px) {
+    .hero-media {
+      --w: max(100cqw, 100cqh * 1.7768);
+      left: calc((100cqw - var(--w)) * 0.7);
+      top: calc((100cqh - var(--w) / 1.7768) * 0.5);
+      bottom: auto;
+    }
+
+    .hero-media-fade {
+      background-image: none;
+    }
+
+    .hero-slide {
+      transform: none;
+    }
+
+    .hero-slide-zoom {
+      --zoom-start: var(--slide-desktop-start, 1);
+      transform-origin: var(--slide-desktop-origin, calc(var(--slide-focus) * 100%)) 60%;
+    }
+
+    .hero-scrim {
+      background-image:
+        radial-gradient(ellipse 62% 46% at 16% 100%, rgb(10 8 3 / 0.98) 45%, rgb(10 8 3 / 0) 100%),
+        linear-gradient(
+          to right,
+          rgb(10 8 3 / 0.97) 0%,
+          rgb(10 8 3 / 0.93) 30%,
+          rgb(10 8 3 / 0.82) 40%,
+          rgb(10 8 3 / 0.55) 50%,
+          rgb(10 8 3 / 0.24) 60%,
+          rgb(10 8 3 / 0.1) 72%,
+          rgb(10 8 3 / 0.06) 100%
+        ),
+        linear-gradient(to bottom, rgb(10 8 3 / 0.55) 0%, transparent 18%);
+    }
+  }
+
+  /*
+   * Carousel slots share one grid cell, so the track is as tall as its longest review and every
+   * card matches. --offset is the slot's distance from the active card.
+   * Phones show one card, tablets two (active on the left), desktops three (active in the centre).
+   */
+  .testimonial-slot {
+    grid-area: 1 / 1;
+    justify-self: center;
+    width: 100%;
+    transform: translateX(calc(var(--offset) * (100% + 1rem)));
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (min-width: 768px) {
+    .testimonial-slot {
+      width: calc(50% - 0.5rem);
+      transform: translateX(calc((var(--offset) - 0.5) * (100% + 1rem)));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .testimonial-slot {
+      width: 27.875rem;
+      transform: translateX(calc(var(--offset) * 30.94rem));
+    }
+
+    .testimonial-slot-active {
+      z-index: 1;
+      transform: translateX(0) scale(1.09);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-slot {
+      transition: none;
+    }
+  }
+
+  .animate-scroll-float {
+    animation: scroll-float 2.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-scroll-float {
+      animation: none;
+    }
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes hero-slide-zoom {
+  from {
+    transform: scale(var(--zoom-start));
+  }
+  to {
+    transform: scale(calc(var(--zoom-start) * 1.1));
+  }
+}
+
+@keyframes scroll-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(0.4rem);
+  }
+}

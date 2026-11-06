@@ -1,0 +1,35 @@
+# dependencies
+node_modules
+
+# next.js build output
+.next
+out
+build
+
+# typescript
+next-env.d.ts
+*.tsbuildinfo
+
+# env / secrets
+.env
+.env*.local
+.env.*
+!.env.example
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# local Claude settings
+.claude/settings.local.json
+
+# misc
+.vercel
+*.pem
